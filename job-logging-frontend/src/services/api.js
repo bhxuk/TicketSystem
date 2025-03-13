@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = 'http://127.0.0.1:5000';
+const API_URL = "http://127.0.0.1:5000";
 
 // Fetch all jobs
 export const getJobs = async () => {
@@ -11,6 +11,12 @@ export const getJobs = async () => {
 // Create a new job
 export const createJob = async (jobData) => {
     const response = await axios.post(`${API_URL}/jobs`, jobData);
+    return response.data;
+};
+
+// Fetch notes for a job
+export const getNotes = async (jobId) => {
+    const response = await axios.get(`${API_URL}/jobs/${jobId}/notes`);
     return response.data;
 };
 

@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS
 from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///jobs.db'
 db = SQLAlchemy(app)
@@ -37,9 +37,9 @@ with app.app_context():
 # Default Route
 @app.route('/')
 def home():
-    return "Job Logging System API is Running!"
+    return "KPS Work & Job Tracking System API is Running!"
 
-# API Routes
+# Get All Jobs
 @app.route('/jobs', methods=['GET'])
 def get_jobs():
     jobs = Job.query.all()
@@ -57,6 +57,7 @@ def get_jobs():
         'hired_equipment': job.hired_equipment
     } for job in jobs])
 
+# Create a Job
 @app.route('/jobs', methods=['POST'])
 def create_job():
     data = request.json
@@ -75,8 +76,28 @@ def create_job():
     db.session.commit()
     return jsonify({'message': 'Job created successfully'}), 201
 
+# Update Job Status
+@app.route('/jobs/<int:job_id>', methods=['PUT'])
+def update_job(job_id):
+    job = Job.query.get_or_404(job_id)
+    data = request.json
+    if 'status' in data:
+        job.status = data['status']
+    db.session.commit()
+    return jsonify({'message': 'Job updated successfully'})
+
+# Get Notes for a Job
+@app.route('/jobs/<int:job_id>/notes', methods=['GET'])
+def get_job_notes(job_id):
+    notes = Note.query.filter_by(job_id=job_id).all()
+    return jsonify([
+        {"id": note.id, "timestamp": note.timestamp.strftime('%Y-%m-%d %H:%M'), "note": note.note}
+        for note in notes
+    ])
+
+# Add a Note to a Job
 @app.route('/jobs/<int:job_id>/notes', methods=['POST'])
-def add_note(job_id):
+def add_job_note(job_id):
     data = request.json
     new_note = Note(job_id=job_id, note=data['note'])
     db.session.add(new_note)
